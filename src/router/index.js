@@ -15,10 +15,16 @@ export default new VueRouter({
 		{
 			path: '/login',
 			component: Login,
+			meta: {
+				isHade: true,
+			},
 		},
 		{
 			path: '/register',
 			component: Register,
+			meta: {
+				isHade: true,
+			},
 		},
 		{
 			path: '/search',
