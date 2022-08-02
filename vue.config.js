@@ -7,5 +7,11 @@ module.exports = defineConfig({
 	devServer: {
 		host: 'localhost',
 		open: true,
+		// 代理
+		proxy: {
+			'/api': {
+				target: 'http://gmall-h5-api.atguigu.cn',
+			},
+		},
 	},
 });

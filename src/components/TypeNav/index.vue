@@ -1695,8 +1695,15 @@
 </template>
 
 <script>
+import { mapActions } from 'vuex';
 export default {
 	name: 'TypeNav',
+	mounted() {
+		this.getCategoryList();
+	},
+	methods: {
+		...mapActions(['getCategoryList']),
+	},
 };
 </script>
 <style lang="less" scoped>
