@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+	</head>
+	<body>
+		<button id="btn">按钮</button>
+		<script>
+			// 防抖
+			var btn = document.getElementById('btn');
+			// btn.onclick = debounce(function () {
+			// 	console.log('给debounce做防抖');
+			// }, 2000);
+
+			// function debounce(fn, delay) {
+			// 	var timer = null; //存定时器
+			// 	return function () {
+			// 		if (timer) {
+			// 			clearTimeout(timer);
+			// 			timer = null;
+			// 		}
+			// 		timer = setTimeout(fn, delay);
+			// 	};
+			// }
+
+			// 节流
+			btn.onclick = throttle(function () {
+				console.log('给throttle做节流');
+			}, 1000);
+
+			function throttle(fn, delay) {
+				var flag = true;
+				return function () {
+					if (flag) {
+						flag = false;
+						setTimeout(function () {
+							flag = true;
+							fn();
+						}, delay);
+					}
+				};
+			}
+		</script>
+	</body>
+</html>

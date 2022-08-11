@@ -4,7 +4,7 @@ import 'nprogress/nprogress.css';
 
 //  创建ajax请求 设置全局路径
 const request = axios.create({
-	baseURL: '/api',
+	baseURL: '/mock',
 	timeout: 2000,
 });
 
@@ -14,12 +14,10 @@ request.interceptors.request.use(
 	(req) => {
 		// 进度条开始
 		NProgress.start();
-		console.log('req--', req);
 		return req;
 	},
 	(err) => {
 		NProgress.done();
-		alert('失败');
 		return config;
 	}
 );
@@ -29,12 +27,10 @@ request.interceptors.response.use(
 	(res) => {
 		// 进度条结束
 		NProgress.done();
-		console.log('res===', res.data);
 		return res.data;
 	},
 	(err) => {
 		NProgress.done();
-		alert('失败');
 		return config;
 	}
 );
