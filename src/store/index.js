@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import home from '@/store/modules/home';
+import search from '@/store/modules/search';
 Vue.use(Vuex);
 
 const state = {};
@@ -15,5 +16,6 @@ export default new Vuex.Store({
 	getters,
 	modules: {
 		home,
+		search,
 	},
 });

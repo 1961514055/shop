@@ -25,3 +25,12 @@ export const reqFloorList = () => {
 		method: 'get',
 	});
 };
+
+// 搜索商品
+export const reqSearchInfo = (searchParam = {}) => {
+	return request({
+		url: '/list',
+		method: 'post',
+		data: searchParam,
+	});
+};

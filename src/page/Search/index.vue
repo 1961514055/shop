@@ -117,10 +117,17 @@
 
 <script>
 import SearchSelector from './SearchSelector';
+import { mapActions } from 'vuex';
 export default {
 	name: 'Search',
 	components: {
 		SearchSelector,
+	},
+	mounted() {
+		this.getSearchInfo();
+	},
+	methods: {
+		...mapActions(['getSearchInfo']),
 	},
 };
 </script>
