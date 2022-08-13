@@ -12,15 +12,24 @@
 						</li>
 					</ul>
 					<ul class="fl sui-tag">
-						<li class="with-x">手机</li>
-						<li class="with-x">iphone<i>×</i></li>
-						<li class="with-x">华为<i>×</i></li>
-						<li class="with-x">OPPO<i>×</i></li>
+						<!-- 三级分类 -->
+						<li class="with-x" v-if="searchParam.categoryName">{{ searchParam.categoryName }}<i @click="removeCategory">x</i></li>
+						<!-- 搜索框输入 -->
+						<li class="with-x" v-if="searchParam.keyword">{{ searchParam.keyword }}<i @click="removeKeyword">x</i></li>
+						<!-- 品牌面包屑导航 -->
+						<li class="with-x" v-if="searchParam.trademark">{{ searchParam.trademark.split(':')[1] }}<i @click="removeTrademark">x</i></li>
+						<!-- 点击平台属性点击处理函数 -->
+						<template v-for="(prop, index) in searchParam.props">
+							<li class="with-x" v-if="searchParam.props.length" :key="index">
+								{{ prop.split(':')[1] }}
+								<i @click="removeProp(index)">x</i>
+							</li>
+						</template>
 					</ul>
 				</div>
 
 				<!-- 搜索器 -->
-				<SearchSelector />
+				<SearchSelector @tmParamsHandler="tmParamsHandler" @attrHandler="attrHandler" />
 
 				<!--商品展示区-->
 				<div class="details clearfix">
@@ -52,21 +61,21 @@
 					<!-- 商品列表 -->
 					<div class="goods-list">
 						<ul class="yui3-g">
-							<li class="yui3-u-1-5">
+							<li class="yui3-u-1-5" v-for="goods in goodsList" :key="goods.id">
 								<div class="list-wrap">
 									<div class="p-img">
-										<a href="item.html" target="_blank"><img src="./images/mobile01.png" /></a>
+										<a href="item.html" target="_blank">
+											<img :src="goods.defaultImg" />
+										</a>
 									</div>
 									<div class="price">
 										<strong>
 											<em>¥</em>
-											<i>6088.00</i>
+											<i> {{ goods.price }} </i>
 										</strong>
 									</div>
 									<div class="attr">
-										<a target="_blank" href="item.html" title="促销信息，下单即赠送三个月CIBN视频会员卡！【小米电视新品4A 58 火爆预约中】"
-											>Apple苹果iPhone 6s (A1699)Apple苹果iPhone 6s (A1699)Apple苹果iPhone 6s (A1699)Apple苹果iPhone 6s (A1699)</a
-										>
+										<a target="_blank" href="item.html">{{ goods.title }}</a>
 									</div>
 									<div class="commit">
 										<i class="command">已有<span>2000</span>人评价</i>
@@ -117,17 +126,114 @@
 
 <script>
 import SearchSelector from './SearchSelector';
-import { mapActions } from 'vuex';
+import { mapActions, mapGetters } from 'vuex';
 export default {
 	name: 'Search',
 	components: {
 		SearchSelector,
 	},
-	mounted() {
-		this.getSearchInfo();
+	computed: {
+		...mapGetters('search', ['goodsList']),
+	},
+	data() {
+		return {
+			searchParam: {
+				category3Id: '', // 三级分类的ID
+				categoryName: '', // 三级分类的名称
+				keyword: '', // 搜索的参数
+				trademark: '', // 品牌 "4:小米" --> "品牌ID:品牌名称"
+				pageNo: 1, // 当前页
+				pageSize: 10, // 每页条数
+				props: [], // "1:1700-2799:价格" --> ["属性ID:属性值:属性名"]  ["106:苹果手机:手机一级"]
+				order: '1:desc', // 排序 -> 1 综合, 2 价格, asc 升序, desc 降序  -> '1:desc'综合降序  '1:asc'综合升序  '2:desc'价格降序  '2:asc'价格升序
+			},
+		};
+	},
+	watch: {
+		$route: {
+			handler(nval, oval) {
+				// 组装数据
+				this.handlerSearchParams();
+				// 发送请求
+				this.getSearchInfo(this.searchParam);
+			},
+			// immediate: true,
+		},
 	},
 	methods: {
-		...mapActions(['getSearchInfo']),
+		// 处理三级分类 参数
+		handlerSearchParams() {
+			const { category1Id, category2Id, category3Id, categoryName } = this.$route.query;
+			const { keyword } = this.$route.params;
+			let searchParams = {
+				...this.searchParam,
+				category1Id,
+				category2Id,
+				category3Id,
+				categoryName,
+				keyword,
+			};
+			// 手动删掉字段为空串或者undefined
+			Object.keys(searchParams).forEach((key) => {
+				if (!searchParams[key]) {
+					delete searchParams[key];
+				}
+			});
+			this.searchParam = searchParams;
+		},
+		...mapActions('search', ['getSearchInfo']),
+		// 删除三级分类导航
+		removeCategory() {
+			this.$router.push({
+				name: 'search',
+				params: this.$route.params,
+			});
+		},
+		// 删除搜索框输入
+		removeKeyword() {
+			this.$router.push({
+				name: 'search',
+				query: this.$route.query,
+			});
+			this.$bus.$emit('clearKeyword');
+		},
+		// 点击品牌名称触发
+		tmParamsHandler(trade) {
+			// 组装数据
+			this.searchParam.trademark = `${trade.tmId}:${trade.tmName}`;
+			// 发送请求
+			this.getSearchInfo(this.searchParam);
+		},
+		// 删除品牌面包屑导航
+		removeTrademark() {
+			this.searchParam.trademark = undefined;
+			// 发送请求
+			this.getSearchInfo(this.searchParam);
+		},
+		//  点击平台属性点击处理函数
+		attrHandler(attr, attrVal) {
+			// ["106:苹果手机:手机一级"]
+			// 组装数据
+			let msg = `${attr.attrId}:${attrVal}:${attr.attrName}`;
+			if (this.searchParam.props.includes(msg)) {
+				return;
+			}
+			this.searchParam.props.push(msg);
+			// 发送请求
+			this.getSearchInfo(this.searchParam);
+		},
+		// 点击删除平台属性
+		removeProp(index) {
+			this.searchParam.props.splice(index, 1);
+			// 发送请求
+			this.getSearchInfo(this.searchParam);
+		},
+	},
+	mounted() {
+		// 组装数据;
+		this.handlerSearchParams();
+		// 发送请求
+		this.getSearchInfo(this.searchParam);
 	},
 };
 </script>

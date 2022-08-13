@@ -102,7 +102,11 @@ export default {
 				location.params = this.$route.params;
 			}
 			//跳转
-			this.$router.push(location);
+			if (this.$route.path === '/home') {
+				this.$router.push(location);
+			} else {
+				this.$router.replace(location);
+			}
 		},
 	},
 };

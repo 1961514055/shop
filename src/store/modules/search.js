@@ -8,9 +8,9 @@ const mutations = {
 	},
 };
 const actions = {
-	async getSearchInfo({ commit }) {
+	async getSearchInfo({ commit }, searchParam) {
 		try {
-			const result = await reqSearchInfo();
+			const result = await reqSearchInfo(searchParam);
 			if (result && result.code === 200) {
 				commit('RECEIVE_MUTATIONS', result.data);
 			}
@@ -19,9 +19,20 @@ const actions = {
 		}
 	},
 };
-const getters = {};
+const getters = {
+	goodsList(state) {
+		return state.searchInfo.goodsList;
+	},
+	attrsList(state) {
+		return state.searchInfo.attrsList;
+	},
+	trademarkList(state) {
+		return state.searchInfo.trademarkList;
+	},
+};
 
 export default {
+	namespaced: true,
 	state,
 	mutations,
 	actions,

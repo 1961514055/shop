@@ -32,7 +32,7 @@
 				</router-link>
 			</h1>
 			<div class="searchArea">
-				<form action="###" class="searchForm">
+				<form action="javascript:;" class="searchForm">
 					<input type="text" id="autocomplete" class="input-error input-xxlarge" v-model="keyword" />
 					<button class="sui-btn btn-xlarge btn-danger" type="button" @click="searchMsg">搜索</button>
 				</form>
@@ -62,9 +62,18 @@ export default {
 			if (this.$route.query) {
 				location.query = this.$route.query;
 			}
-
-			this.$router.push(location);
+			if (this.$route.path === '/home') {
+				this.$router.push(location);
+			} else {
+				this.$router.replace(location);
+			}
 		},
+		clearKeyword() {
+			this.keyword = '';
+		},
+	},
+	mounted() {
+		this.$bus.$on('clearKeyword', this.clearKeyword);
 	},
 };
 </script>
