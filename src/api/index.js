@@ -34,3 +34,8 @@ export const reqSearchInfo = (searchParam = {}) => {
 		data: searchParam,
 	});
 };
+
+// 商品详情
+export const reqDetailInfo = (skuId) => {
+	return request.get(`/item/${skuId}`);
+};

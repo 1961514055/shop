@@ -58,9 +58,9 @@
 							<li class="yui3-u-1-5" v-for="goods in goodsList" :key="goods.id">
 								<div class="list-wrap">
 									<div class="p-img">
-										<a href="item.html" target="_blank">
+										<router-link :to="`/detail/${goods.id}`">
 											<img :src="goods.defaultImg" />
-										</a>
+										</router-link>
 									</div>
 									<div class="price">
 										<strong>
@@ -69,7 +69,9 @@
 										</strong>
 									</div>
 									<div class="attr">
-										<a target="_blank" href="item.html">{{ goods.title }}</a>
+										<router-link :to="`/detail/${goods.id}`">
+											{{ goods.title }}
+										</router-link>
 									</div>
 									<div class="commit">
 										<i class="command">已有<span>2000</span>人评价</i>
@@ -224,7 +226,6 @@ export default {
 		},
 		// 分页
 		pageChange(page) {
-			console.log('要跳转的分页--', page);
 			if (page === this.searchParams.pageNo) {
 				// 如果要跳转的页和当前页一样则直接返回  减少发请求次数
 				return;

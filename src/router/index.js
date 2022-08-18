@@ -1,9 +1,6 @@
 import VueRouter from 'vue-router';
 import Vue from 'vue';
-import Home from '@/page/Home';
-import Login from '@/page/Login';
-import Register from '@/page/Register';
-import Search from '@/page/Search';
+import routes from './routes';
 Vue.use(VueRouter);
 
 // 解决$router.push()两次跳转同一路径报错问题
@@ -16,29 +13,9 @@ VueRouter.prototype.push = function push(location) {
 	return originReplace.call(this, location).catch(() => {});
 };
 export default new VueRouter({
-	routes: [
-		{
-			path: '/home',
-			component: Home,
-		},
-		{
-			path: '/login',
-			component: Login,
-			meta: {
-				isHade: true,
-			},
-		},
-		{
-			path: '/register',
-			component: Register,
-			meta: {
-				isHade: true,
-			},
-		},
-		{
-			name: 'search',
-			path: '/search/:keyword?',
-			component: Search,
-		},
-	],
+	// 路由
+	routes,
+	scrollBehavior(to, from, savedPosition) {
+		return { y: 0 }; //y为0代表滚动到顶部
+	},
 });
