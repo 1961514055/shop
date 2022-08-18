@@ -21,13 +21,17 @@ const actions = {
 };
 const getters = {
 	goodsList(state) {
-		return state.searchInfo.goodsList;
+		return state.searchInfo.goodsList || [];
 	},
 	attrsList(state) {
-		return state.searchInfo.attrsList;
+		return state.searchInfo.attrsList || [];
 	},
 	trademarkList(state) {
-		return state.searchInfo.trademarkList;
+		return state.searchInfo.trademarkList || [];
+	},
+	//总条数
+	total(state) {
+		return state.searchInfo.total || 0;
 	},
 };
 

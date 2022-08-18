@@ -13,14 +13,14 @@
 					</ul>
 					<ul class="fl sui-tag">
 						<!-- 三级分类 -->
-						<li class="with-x" v-if="searchParam.categoryName">{{ searchParam.categoryName }}<i @click="removeCategory">x</i></li>
+						<li class="with-x" v-if="searchParams.categoryName">{{ searchParams.categoryName }}<i @click="removeCategory">x</i></li>
 						<!-- 搜索框输入 -->
-						<li class="with-x" v-if="searchParam.keyword">{{ searchParam.keyword }}<i @click="removeKeyword">x</i></li>
+						<li class="with-x" v-if="searchParams.keyword">{{ searchParams.keyword }}<i @click="removeKeyword">x</i></li>
 						<!-- 品牌面包屑导航 -->
-						<li class="with-x" v-if="searchParam.trademark">{{ searchParam.trademark.split(':')[1] }}<i @click="removeTrademark">x</i></li>
+						<li class="with-x" v-if="searchParams.trademark">{{ searchParams.trademark.split(':')[1] }}<i @click="removeTrademark">x</i></li>
 						<!-- 点击平台属性点击处理函数 -->
-						<template v-for="(prop, index) in searchParam.props">
-							<li class="with-x" v-if="searchParam.props.length" :key="index">
+						<template v-for="(prop, index) in searchParams.props">
+							<li class="with-x" v-if="searchParams.props.length" :key="index">
 								{{ prop.split(':')[1] }}
 								<i @click="removeProp(index)">x</i>
 							</li>
@@ -37,23 +37,17 @@
 					<div class="sui-navbar">
 						<div class="navbar-inner filter">
 							<ul class="sui-nav">
-								<li class="active">
-									<a href="#">综合</a>
+								<li :class="{ active: orderTag == 1 }">
+									<a href="javascript:;" @click="orderHandler(1)">
+										综合
+										<i class="iconfont" :class="{ 'icon-jiantou_xiangshang': orderType === 'asc', 'icon-jiantou_xiangxia': orderType === 'desc' }" v-show="orderTag == 1"> </i>
+									</a>
 								</li>
-								<li>
-									<a href="#">销量</a>
-								</li>
-								<li>
-									<a href="#">新品</a>
-								</li>
-								<li>
-									<a href="#">评价</a>
-								</li>
-								<li>
-									<a href="#">价格⬆</a>
-								</li>
-								<li>
-									<a href="#">价格⬇</a>
+								<li :class="{ active: orderTag == 2 }">
+									<a href="javascript:;" @click="orderHandler(2)">
+										价格
+										<i class="iconfont" :class="{ 'icon-jiantou_xiangshang': orderType === 'asc', 'icon-jiantou_xiangxia': orderType === 'desc' }" v-show="orderTag == 2"> </i>
+									</a>
 								</li>
 							</ul>
 						</div>
@@ -71,7 +65,7 @@
 									<div class="price">
 										<strong>
 											<em>¥</em>
-											<i> {{ goods.price }} </i>
+											<i> {{ goods.price.toFixed(2) }} </i>
 										</strong>
 									</div>
 									<div class="attr">
@@ -89,35 +83,8 @@
 						</ul>
 					</div>
 					<!-- 分页器 -->
-					<div class="fr page">
-						<div class="sui-pagination clearfix">
-							<ul>
-								<li class="prev disabled">
-									<a href="#">«上一页</a>
-								</li>
-								<li class="active">
-									<a href="#">1</a>
-								</li>
-								<li>
-									<a href="#">2</a>
-								</li>
-								<li>
-									<a href="#">3</a>
-								</li>
-								<li>
-									<a href="#">4</a>
-								</li>
-								<li>
-									<a href="#">5</a>
-								</li>
-								<li class="dotted"><span>...</span></li>
-								<li class="next">
-									<a href="#">下一页»</a>
-								</li>
-							</ul>
-							<div><span>共10页&nbsp;</span></div>
-						</div>
-					</div>
+					<!-- 当前页 每页条数 总条数 连续数 -->
+					<Pagination :pageNo="searchParams.pageNo" :pageSize="searchParams.pageSize" :total="total" :pageCount="5" @pageChange="pageChange"></Pagination>
 				</div>
 			</div>
 		</div>
@@ -133,17 +100,25 @@ export default {
 		SearchSelector,
 	},
 	computed: {
-		...mapGetters('search', ['goodsList']),
+		...mapGetters('search', ['goodsList', 'total']),
+		orderTag() {
+			// 类型: 综合/价格
+			return this.searchParams.order.split(':')[0];
+		},
+		orderType() {
+			// 排序:desc asc
+			return this.searchParams.order.split(':')[1];
+		},
 	},
 	data() {
 		return {
-			searchParam: {
+			searchParams: {
 				category3Id: '', // 三级分类的ID
 				categoryName: '', // 三级分类的名称
 				keyword: '', // 搜索的参数
 				trademark: '', // 品牌 "4:小米" --> "品牌ID:品牌名称"
 				pageNo: 1, // 当前页
-				pageSize: 10, // 每页条数
+				pageSize: 2, // 每页条数
 				props: [], // "1:1700-2799:价格" --> ["属性ID:属性值:属性名"]  ["106:苹果手机:手机一级"]
 				order: '1:desc', // 排序 -> 1 综合, 2 价格, asc 升序, desc 降序  -> '1:desc'综合降序  '1:asc'综合升序  '2:desc'价格降序  '2:asc'价格升序
 			},
@@ -155,7 +130,7 @@ export default {
 				// 组装数据
 				this.handlerSearchParams();
 				// 发送请求
-				this.getSearchInfo(this.searchParam);
+				this.getSearchInfo(this.searchParams);
 			},
 			// immediate: true,
 		},
@@ -166,7 +141,7 @@ export default {
 			const { category1Id, category2Id, category3Id, categoryName } = this.$route.query;
 			const { keyword } = this.$route.params;
 			let searchParams = {
-				...this.searchParam,
+				...this.searchParams,
 				category1Id,
 				category2Id,
 				category3Id,
@@ -179,7 +154,7 @@ export default {
 					delete searchParams[key];
 				}
 			});
-			this.searchParam = searchParams;
+			this.searchParams = searchParams;
 		},
 		...mapActions('search', ['getSearchInfo']),
 		// 删除三级分类导航
@@ -200,40 +175,70 @@ export default {
 		// 点击品牌名称触发
 		tmParamsHandler(trade) {
 			// 组装数据
-			this.searchParam.trademark = `${trade.tmId}:${trade.tmName}`;
+			this.searchParams.trademark = `${trade.tmId}:${trade.tmName}`;
 			// 发送请求
-			this.getSearchInfo(this.searchParam);
+			this.getSearchInfo(this.searchParams);
 		},
 		// 删除品牌面包屑导航
 		removeTrademark() {
-			this.searchParam.trademark = undefined;
+			this.searchParams.trademark = undefined;
 			// 发送请求
-			this.getSearchInfo(this.searchParam);
+			this.getSearchInfo(this.searchParams);
 		},
 		//  点击平台属性点击处理函数
 		attrHandler(attr, attrVal) {
 			// ["106:苹果手机:手机一级"]
 			// 组装数据
 			let msg = `${attr.attrId}:${attrVal}:${attr.attrName}`;
-			if (this.searchParam.props.includes(msg)) {
+			if (this.searchParams.props.includes(msg)) {
 				return;
 			}
-			this.searchParam.props.push(msg);
+			this.searchParams.props.push(msg);
 			// 发送请求
-			this.getSearchInfo(this.searchParam);
+			this.getSearchInfo(this.searchParams);
 		},
 		// 点击删除平台属性
 		removeProp(index) {
-			this.searchParam.props.splice(index, 1);
+			this.searchParams.props.splice(index, 1);
 			// 发送请求
-			this.getSearchInfo(this.searchParam);
+			this.getSearchInfo(this.searchParams);
+		},
+		// 点击综合销量排序
+		orderHandler(tag) {
+			// '1:desc'综合降序  '1:asc'综合升序  '2:desc'价格降序  '2:asc'价格升序
+			// 点击同类型时 切换排序
+			// 点击不同类型时 数据为被点击类型降序
+			// const currentTag = this.searchParams.order.split(':');
+			let currentTag = this.searchParams.order.split(':')[0]; // 当前选中的类型
+			let currentType = this.searchParams.order.split(':')[1]; // 当前选中的类型的顺序
+			let text; // 存放组装好的数据
+			if (tag == currentTag) {
+				// 同类型
+				text = `${tag}:${currentType === 'desc' ? 'asc' : 'desc'}`;
+			} else {
+				// 不同类型
+				text = `${tag}:desc`;
+			}
+			this.searchParams.order = text; //组装数据
+			this.getSearchInfo(this.searchParams); // 发送请求
+		},
+		// 分页
+		pageChange(page) {
+			console.log('要跳转的分页--', page);
+			if (page === this.searchParams.pageNo) {
+				// 如果要跳转的页和当前页一样则直接返回  减少发请求次数
+				return;
+			}
+			this.searchParams.pageNo = page;
+			// 发送请求
+			this.getSearchInfo(this.searchParams);
 		},
 	},
 	mounted() {
 		// 组装数据;
 		this.handlerSearchParams();
 		// 发送请求
-		this.getSearchInfo(this.searchParam);
+		this.getSearchInfo(this.searchParams);
 	},
 };
 </script>
